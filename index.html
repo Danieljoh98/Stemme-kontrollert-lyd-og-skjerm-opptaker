@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice & Screen Recorder</title>
+    <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body>
+    <!-- Voice Commands Info Box -->
+    <div class="voice-commands-info" id="voiceCommandsInfo">
+        <h4>🎙️ Voice Commands</h4>
+        <ul>
+            <li>
+                <span class="command">"Start recording"</span>
+                <div class="description">Begins recording your voice input</div>
+            </li>
+            <li>
+                <span class="command">"Stop recording"</span>
+                <div class="description">Stops the current recording session</div>
+            </li>
+            <li>
+                <span class="command">"Select audio"</span>
+                <div class="description">Switches to audio recording mode</div>
+            </li>
+            <li>
+                <span class="command">"Select screen"</span>
+                <div class="description">Switches to screen recording mode</div>
+            </li>
+            <li>
+                <span class="command">"Microphone on"</span>
+                <div class="description">Enables microphone for recording</div>
+            </li>
+            <li>
+                <span class="command">"Microphone off"</span>
+                <div class="description">Disables microphone for recording</div>
+            </li>
+            <li>
+                <span class="command">"Dark mode"</span>
+                <div class="description">Switches to dark theme</div>
+            </li>
+            <li>
+                <span class="command">"Light mode"</span>
+                <div class="description">Switches to light theme</div>
+            </li>
+            <li>
+                <span class="command">"Disable voice"</span>
+                <div class="description">Turns off voice commands</div>
+            </li>
+            <li>
+                <span class="command">"Download"</span>
+                <div class="description">Downloads the latest recording</div>
+            </li>
+            <li>
+                <span class="command">"Start"</span>
+                <div class="description">Plays the latest recording</div>
+            </li>
+            <li>
+                <span class="command">"Pause"</span>
+                <div class="description">Pauses the latest recording</div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="theme-toggle" id="themeToggle">🌙</div>
+        <h1>🎙️ Voice & Screen Recorder</h1>
+        
+        <!-- Main Control Buttons -->
+        <div class="controls">
+            <button id="startRecordingBtn" class="btn-start">🔴 Start Recording</button>
+            <button id="stopRecordingBtn" class="btn-stop" disabled>⏹️ Stop Recording</button>
+            <button id="voiceActivationBtn" class="btn-voice">🎤 Enable Voice</button>
+        </div>
+        
+        <!-- Recording Type Selection -->
+        <div class="recording-sections">
+            <div class="recording-panel audio-panel">
+                <div class="panel-title">🎤 Audio Recording</div>
+                <div class="recording-controls">
+                    <button id="selectAudioBtn" class="btn-start">Select Audio</button>
+                    <button id="audioMicBtn" class="btn-voice" style="font-size: 0.8rem;">🎤 Microphone OFF</button>
+                </div>
+                <div class="status" id="audioStatus">Ready for audio recording</div>
+            </div>
+            
+            <div class="recording-panel screen-panel">
+                <div class="panel-title">🖥️ Screen Recording</div>
+                <div class="recording-controls">
+                    <button id="selectScreenBtn" class="btn-start">Select Screen</button>
+                    <button id="toggleMicBtn" class="btn-voice" style="font-size: 0.8rem;">🎤 Microphone OFF</button>
+                </div>
+                <div class="status" id="screenStatus">Ready for screen recording</div>
+                
+                <!-- Screen Preview Window -->
+                <div class="screen-preview" id="screenPreview" style="display: none;">
+                    <div style="margin-bottom: 0.5rem; font-weight: 600;">Screen Preview:</div>
+                    <video id="previewVideo" class="preview-video" autoplay muted></video>
+                </div>
+                
+                <div class="screen-preview" id="screenPlaceholder">
+                    <div class="preview-placeholder">
+                        Click "Select Screen" to choose and preview your screen
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Always-On Microphone Display -->
+        <div class="microphone-display">
+            <div class="mic-title">🎤 Live Microphone Feed</div>
+            <div id="transcriptLive" class="transcript-live">
+                🎤 Requesting microphone permission for all features...
+            </div>
+        </div>
+        
+        <!-- Recordings Display -->
+        <div class="recordings">
+            <h3>📼 Your Recordings</h3>
+            <div id="recordingsList">
+                <div style="text-align: center; opacity: 0.6; padding: 2rem;">
+                    No recordings yet. Start recording to see them here!
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Log -->
+        <div class="recordings" style="margin-top: 2rem;">
+            <h3>📋 Detailed Log</h3>
+            <div id="detailedLog" style="background: rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem;">
+                <div style="opacity: 0.6; text-align: center;">Application started - log entries will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/main.js"></script>
+</body>
+</html>

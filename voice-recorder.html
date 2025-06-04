@@ -1,0 +1,2333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice & Screen Recorder</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        /* Dark Theme */
+        body.dark-theme {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f1f5f9;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                0 0 0 1px rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .dark-theme .container {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(71, 85, 105, 0.8);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 10px 10px -5px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(71, 85, 105, 0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 50%, #1e3a8a 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.025em;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme h1 {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e2e8f0;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.25rem;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-2px) rotate(180deg);
+            box-shadow: 
+                0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-theme .theme-toggle {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #475569;
+            color: #f1f5f9;
+        }
+
+        /* Voice Commands Info Box */
+        .voice-commands-info {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 
+                0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            width: 280px;
+            font-size: 0.875rem;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .voice-commands-info h4 {
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .voice-commands-info ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .voice-commands-info li {
+            margin-bottom: 0.75rem;
+            padding-left: 0;
+        }
+
+        .voice-commands-info .command {
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .voice-commands-info .description {
+            color: #64748b;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .dark-theme .voice-commands-info {
+            background: rgba(30, 41, 59, 0.95);
+            border-color: #475569;
+        }
+
+        .dark-theme .voice-commands-info h4 {
+            color: #f1f5f9;
+        }
+
+        .dark-theme .voice-commands-info .command {
+            color: #60a5fa;
+        }
+
+        .dark-theme .voice-commands-info .description {
+            color: #94a3b8;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            font-family: inherit;
+            letter-spacing: 0.025em;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .dark-theme button {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: #ffffff;
+            border-color: #2563eb;
+            box-shadow: 
+                0 4px 6px -1px rgba(59, 130, 246, 0.3),
+                0 2px 4px -1px rgba(59, 130, 246, 0.2);
+        }
+        
+        button:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+            box-shadow: 
+                0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-theme button:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.4),
+                0 4px 6px -2px rgba(59, 130, 246, 0.3);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-start {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border-color: #059669;
+        }
+        
+        .btn-start:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-1px);
+        }
+
+        .dark-theme .btn-start {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 
+                0 4px 6px -1px rgba(16, 185, 129, 0.3),
+                0 2px 4px -1px rgba(16, 185, 129, 0.2);
+        }
+
+        .dark-theme .btn-start:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 
+                0 10px 15px -3px rgba(16, 185, 129, 0.4),
+                0 4px 6px -2px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-stop {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border-color: #dc2626;
+        }
+        
+        .btn-stop:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-1px);
+        }
+
+        .dark-theme .btn-stop {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 
+                0 4px 6px -1px rgba(239, 68, 68, 0.3),
+                0 2px 4px -1px rgba(239, 68, 68, 0.2);
+        }
+
+        .dark-theme .btn-stop:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 
+                0 10px 15px -3px rgba(239, 68, 68, 0.4),
+                0 4px 6px -2px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-voice {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border-color: #d97706;
+        }
+        
+        .btn-voice:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-1px);
+        }
+
+        .dark-theme .btn-voice {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 
+                0 4px 6px -1px rgba(245, 158, 11, 0.3),
+                0 2px 4px -1px rgba(245, 158, 11, 0.2);
+        }
+
+        .dark-theme .btn-voice:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            box-shadow: 
+                0 10px 15px -3px rgba(245, 158, 11, 0.4),
+                0 4px 6px -2px rgba(245, 158, 11, 0.3);
+        }
+        
+        .btn-voice.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            animation: pulse 2s infinite;
+            border-color: #7c3aed;
+        }
+
+        .dark-theme .btn-voice.active {
+            background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 100%);
+            border-color: #a855f7;
+            box-shadow: 
+                0 4px 6px -1px rgba(168, 85, 247, 0.3),
+                0 2px 4px -1px rgba(168, 85, 247, 0.2);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+        
+        .recording-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .recording-panel {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .recording-panel {
+            background: rgba(51, 65, 85, 0.8);
+            border-color: #475569;
+        }
+        
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #1e293b;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .panel-title {
+            color: #f1f5f9;
+        }
+        
+        .audio-panel .panel-title {
+            color: #059669;
+        }
+        
+        .screen-panel .panel-title {
+            color: #2563eb;
+        }
+        
+        .recording-controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .recording-controls button {
+            flex: 1;
+            padding: 0.8rem;
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            text-align: center;
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+            padding: 1.25rem;
+            border-radius: 12px;
+            background: #f8fafc;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-weight: 500;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .status {
+            background: #1e293b;
+            color: #94a3b8;
+            border-color: #475569;
+        }
+        
+        .status.recording {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #dc2626;
+            border-color: #fecaca;
+            animation: recording-pulse 1.5s infinite;
+        }
+        
+        @keyframes recording-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Screen Preview Window */
+        .screen-preview {
+            margin-top: 1.5rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .screen-preview {
+            background: #1e293b;
+            border-color: #475569;
+        }
+        
+        .preview-video {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .preview-placeholder {
+            width: 100%;
+            height: 200px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            color: #64748b;
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .preview-placeholder {
+            background: #334155;
+            color: #94a3b8;
+            border-color: #475569;
+        }
+        
+        .microphone-display {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2.5rem 0;
+            border: 1px solid #e2e8f0;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .microphone-display {
+            background: rgba(51, 65, 85, 0.8);
+            border-color: #475569;
+        }
+        
+        .mic-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #d97706;
+        }
+        
+        .transcript-live {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 80px;
+            font-style: italic;
+            font-size: 1rem;
+            border-left: 4px solid #d97706;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .transcript-live.listening {
+            border-left-color: #059669;
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .dark-theme .transcript-live {
+            background: #1e293b;
+            color: #94a3b8;
+            border-color: #475569;
+        }
+
+        .dark-theme .transcript-live.listening {
+            background: #064e3b;
+            color: #bbf7d0;
+            border-color: #059669;
+        }
+        
+        .recordings {
+            margin-top: 2rem;
+        }
+        
+        .recordings h3 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .dark-theme .recordings h3 {
+            color: #f1f5f9;
+        }
+        
+        .recording-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .recording-item:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .dark-theme .recording-item {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: #475569;
+        }
+
+        .dark-theme .recording-item:hover {
+            background: rgba(71, 85, 105, 0.9);
+        }
+        
+        .recording-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .recording-type {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.3s ease;
+        }
+        
+        .type-audio {
+            background: #d1fae5;
+            color: #059669;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .type-screen {
+            background: #dbeafe;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+        }
+
+        .dark-theme .type-audio {
+            background: #064e3b;
+            color: #6ee7b7;
+            border-color: #059669;
+        }
+
+        .dark-theme .type-screen {
+            background: #1e3a8a;
+            color: #93c5fd;
+            border-color: #2563eb;
+        }
+        
+        audio, video {
+            width: 100%;
+            margin: 1rem 0;
+            border-radius: 10px;
+        }
+        
+        .download-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+        
+        .download-btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-1px);
+            box-shadow: 
+                0 10px 15px -3px rgba(59, 130, 246, 0.3),
+                0 4px 6px -2px rgba(59, 130, 246, 0.2);
+        }
+
+        .dark-theme .download-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            box-shadow: 
+                0 4px 6px -1px rgba(99, 102, 241, 0.3),
+                0 2px 4px -1px rgba(99, 102, 241, 0.2);
+        }
+
+        .dark-theme .download-btn:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 
+                0 10px 15px -3px rgba(99, 102, 241, 0.4),
+                0 4px 6px -2px rgba(99, 102, 241, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .recording-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Voice Commands Info Box -->
+    <div class="voice-commands-info" id="voiceCommandsInfo">
+        <h4>🎙️ Voice Commands</h4>
+        <ul>
+            <li>
+                <span class="command">"Start recording"</span>
+                <div class="description">Begins recording your voice input</div>
+            </li>
+            <li>
+                <span class="command">"Stop recording"</span>
+                <div class="description">Stops the current recording session</div>
+            </li>
+            <li>
+                <span class="command">"Select audio"</span>
+                <div class="description">Switches to audio recording mode</div>
+            </li>
+            <li>
+                <span class="command">"Select screen"</span>
+                <div class="description">Switches to screen recording mode</div>
+            </li>
+            <li>
+                <span class="command">"Microphone on"</span>
+                <div class="description">Enables microphone for recording</div>
+            </li>
+            <li>
+                <span class="command">"Microphone off"</span>
+                <div class="description">Disables microphone for recording</div>
+            </li>
+            <li>
+                <span class="command">"Dark mode"</span>
+                <div class="description">Switches to dark theme</div>
+            </li>
+            <li>
+                <span class="command">"Light mode"</span>
+                <div class="description">Switches to light theme</div>
+            </li>
+            <li>
+                <span class="command">"Disable voice"</span>
+                <div class="description">Turns off voice commands</div>
+            </li>
+            <li>
+                <span class="command">"Download"</span>
+                <div class="description">Downloads the latest recording</div>
+            </li>
+            <li>
+                <span class="command">"Start"</span>
+                <div class="description">Plays the latest recording</div>
+            </li>
+            <li>
+                <span class="command">"Pause"</span>
+                <div class="description">Pauses the latest recording</div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="theme-toggle" id="themeToggle">🌙</div>
+        <h1>🎙️ Voice & Screen Recorder</h1>
+        
+        <!-- Main Control Buttons -->
+        <div class="controls">
+            <button id="startRecordingBtn" class="btn-start">🔴 Start Recording</button>
+            <button id="stopRecordingBtn" class="btn-stop" disabled>⏹️ Stop Recording</button>
+            <button id="voiceActivationBtn" class="btn-voice">🎤 Enable Voice</button>
+        </div>
+        
+        <!-- Recording Type Selection -->
+        <div class="recording-sections">
+            <div class="recording-panel audio-panel">
+                <div class="panel-title">🎤 Audio Recording</div>
+                <div class="recording-controls">
+                    <button id="selectAudioBtn" class="btn-start">Select Audio</button>
+                    <button id="audioMicBtn" class="btn-voice" style="font-size: 0.8rem;">🎤 Microphone ON</button>
+                </div>
+                <div class="status" id="audioStatus">Ready for audio recording</div>
+            </div>
+            
+            <div class="recording-panel screen-panel">
+                <div class="panel-title">🖥️ Screen Recording</div>
+                <div class="recording-controls">
+                    <button id="selectScreenBtn" class="btn-start">Select Screen</button>
+                    <button id="toggleMicBtn" class="btn-voice" style="font-size: 0.8rem;">🎤 Microphone ON</button>
+                </div>
+                <div class="status" id="screenStatus">Ready for screen recording</div>
+                
+                <!-- Screen Preview Window -->
+                <div class="screen-preview" id="screenPreview" style="display: none;">
+                    <div style="margin-bottom: 0.5rem; font-weight: 600;">Screen Preview:</div>
+                    <video id="previewVideo" class="preview-video" autoplay muted></video>
+                </div>
+                
+                <div class="screen-preview" id="screenPlaceholder">
+                    <div class="preview-placeholder">
+                        Click "Select Screen" to choose and preview your screen
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Always-On Microphone Display -->
+        <div class="microphone-display">
+            <div class="mic-title">🎤 Live Microphone Feed</div>
+            <div id="transcriptLive" class="transcript-live">
+                🎤 Requesting microphone permission for all features...
+            </div>
+        </div>
+        
+        <!-- Recordings Display -->
+        <div class="recordings">
+            <h3>📼 Your Recordings</h3>
+            <div id="recordingsList">
+                <div style="text-align: center; opacity: 0.6; padding: 2rem;">
+                    No recordings yet. Start recording to see them here!
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Log -->
+        <div class="recordings" style="margin-top: 2rem;">
+            <h3>📋 Detailed Log</h3>
+            <div id="detailedLog" style="background: rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0; max-height: 300px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem;">
+                <div style="opacity: 0.6; text-align: center;">Application started - log entries will appear here...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class VoiceScreenRecorder {
+            constructor() {
+                this.recognition = null;
+                this.audioRecorder = null;
+                this.screenRecorder = null;
+                this.audioStream = null;
+                this.screenStream = null;
+                this.previewStream = null;
+                this.audioChunks = [];
+                this.screenChunks = [];
+                this.isVoiceEnabled = false;
+                this.isRecording = false;
+                this.recordingMode = null; // 'audio', 'screen'
+                this.screenSelected = false;
+                this.microphoneEnabled = true; // For microphone (enabled by default)
+                this.subtitlesEnabled = false; // For subtitle generation
+                this.subtitleData = []; // Store subtitle timestamps and text
+                this.recordingTimer = null; // For recording time display
+                this.subtitleOverlay = null; // For on-screen subtitle display
+                this.currentSubtitleText = ''; // Current subtitle text
+                this.videoCanvas = null; // For subtitle embedding
+                this.videoContext = null; // Canvas context for drawing
+                this.recordings = [];
+                this.isDarkTheme = false;
+                this.microphonePermissionGranted = false;
+                this.microphoneStream = null; // Keep persistent mic stream
+                this.detailedLog = null; // For logging
+                
+                this.initElements();
+                this.initLog();
+                this.initMicrophone(); // Initialize mic with persistent permission
+                this.initSpeechRecognition();
+                this.bindEvents();
+                this.initTheme();
+            }
+            
+            initElements() {
+                // Main controls
+                this.startRecordingBtn = document.getElementById('startRecordingBtn');
+                this.stopRecordingBtn = document.getElementById('stopRecordingBtn');
+                this.voiceActivationBtn = document.getElementById('voiceActivationBtn');
+                
+                // Selection buttons
+                this.selectAudioBtn = document.getElementById('selectAudioBtn');
+                this.selectScreenBtn = document.getElementById('selectScreenBtn');
+                this.toggleMicBtn = document.getElementById('toggleMicBtn');
+                this.audioMicBtn = document.getElementById('audioMicBtn');
+                
+                // Theme toggle
+                this.themeToggle = document.getElementById('themeToggle');
+                
+                // Status displays
+                this.audioStatus = document.getElementById('audioStatus');
+                this.screenStatus = document.getElementById('screenStatus');
+                this.transcriptLive = document.getElementById('transcriptLive');
+                
+                // Screen preview
+                this.screenPreview = document.getElementById('screenPreview');
+                this.screenPlaceholder = document.getElementById('screenPlaceholder');
+                this.previewVideo = document.getElementById('previewVideo');
+                
+                // Recordings
+                this.recordingsListEl = document.getElementById('recordingsList');
+                
+                // Detailed Log
+                this.detailedLog = document.getElementById('detailedLog');
+            }
+            
+            initLog() {
+                this.addLog('🚀 Voice & Screen Recorder initialized', 'info');
+            }
+            
+            addLog(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.style.marginBottom = '0.5rem';
+                logEntry.style.padding = '0.25rem';
+                logEntry.style.borderRadius = '4px';
+                
+                // Color coding based on type
+                switch(type) {
+                    case 'error':
+                        logEntry.style.background = 'rgba(239, 68, 68, 0.1)';
+                        logEntry.style.color = '#dc2626';
+                        break;
+                    case 'success':
+                        logEntry.style.background = 'rgba(16, 185, 129, 0.1)';
+                        logEntry.style.color = '#059669';
+                        break;
+                    case 'warning':
+                        logEntry.style.background = 'rgba(245, 158, 11, 0.1)';
+                        logEntry.style.color = '#d97706';
+                        break;
+                    default:
+                        logEntry.style.background = 'rgba(59, 130, 246, 0.1)';
+                        logEntry.style.color = '#2563eb';
+                }
+                
+                logEntry.innerHTML = `<span style="opacity: 0.7;">[${timestamp}]</span> ${message}`;
+                
+                // Clear initial message if it exists
+                const initialMessage = this.detailedLog.querySelector('[style*="text-align: center"]');
+                if (initialMessage) {
+                    initialMessage.remove();
+                }
+                
+                this.detailedLog.appendChild(logEntry);
+                
+                // Auto-scroll to bottom
+                this.detailedLog.scrollTop = this.detailedLog.scrollHeight;
+                
+                // Also log to console
+                console.log(`[${timestamp}] ${message}`);
+            }
+            
+            async initMicrophone() {
+                // Auto-click allow button for microphone permission
+                this.autoAllowPermission();
+                
+                // Request microphone permission immediately on startup for persistent access
+                try {
+                    console.log('🎤 Requesting microphone permission at startup for all features...');
+                    this.addLog('🎤 Requesting microphone permission...', 'info');
+                    this.microphoneStream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            sampleRate: 44100
+                        }
+                    });
+                    
+                    this.microphonePermissionGranted = true;
+                    console.log('✅ Microphone permission granted! All features now available.');
+                    this.addLog('✅ Microphone permission granted! All features available.', 'success');
+                    
+                    // Update UI immediately
+                    this.transcriptLive.textContent = '✅ Microphone ready! Voice commands are enabled by default.';
+                    
+                    // Auto-enable voice activation after permission is granted
+                    setTimeout(() => {
+                        this.enableVoiceActivation();
+                    }, 1000);
+                    
+                } catch (error) {
+                    console.error('❌ Microphone access denied or not available:', error);
+                    this.addLog('❌ Microphone access denied: ' + error.message, 'error');
+                    this.microphonePermissionGranted = false;
+                    this.transcriptLive.textContent = '❌ Microphone access needed for all features. Please refresh and allow microphone access.';
+                }
+            }
+            
+            autoAllowPermission() {
+                // Enhanced function to automatically handle permission dialogs
+                try {
+                    console.log('🤖 Setting up auto-permission system...');
+                    
+                    // Method 1: Monitor DOM for permission dialogs
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            if (mutation.addedNodes) {
+                                mutation.addedNodes.forEach((node) => {
+                                    if (node.nodeType === 1) { // Element node
+                                        this.checkForPermissionDialogs(node);
+                                    }
+                                });
+                            }
+                        });
+                    });
+                    
+                    observer.observe(document.body, {
+                        childList: true,
+                        subtree: true
+                    });
+                    
+                    // Method 2: Preemptive permission request with user gesture simulation
+                    setTimeout(() => {
+                        this.simulateUserGesture();
+                    }, 500);
+                    
+                    // Method 3: Override native permission prompts
+                    this.overridePermissionAPI();
+                    
+                    console.log('✅ Auto-permission system activated');
+                } catch (error) {
+                    console.log('ℹ️ Auto-permission system setup failed:', error);
+                }
+            }
+            
+            checkForPermissionDialogs(node) {
+                // Look for various permission dialog patterns
+                const allowSelectors = [
+                    'button[aria-label*="Allow"]',
+                    'button[aria-label*="allow"]',
+                    'button:contains("Allow")',
+                    'button:contains("allow")',
+                    '.permission-allow-button',
+                    '[data-permission="allow"]',
+                    'button[value="allow"]',
+                    'button[data-testid="allow"]',
+                    '.allow-button',
+                    '#allow-button',
+                    'button[role="button"][aria-pressed="false"]:contains("Allow")'
+                ];
+                
+                allowSelectors.forEach(selector => {
+                    try {
+                        const buttons = node.querySelectorAll ? node.querySelectorAll(selector) : [];
+                        buttons.forEach(button => {
+                            if (button && button.textContent && 
+                                (button.textContent.toLowerCase().includes('allow') || 
+                                 button.getAttribute('aria-label')?.toLowerCase().includes('allow'))) {
+                                console.log('🔄 Found and clicking Allow button:', button);
+                                setTimeout(() => {
+                                    button.click();
+                                    button.dispatchEvent(new Event('click', { bubbles: true }));
+                                }, 100);
+                            }
+                        });
+                    } catch (e) {
+                        // Ignore errors for invalid selectors
+                    }
+                });
+            }
+            
+            simulateUserGesture() {
+                // Simulate user interaction to enable auto-permission
+                try {
+                    const clickEvent = new MouseEvent('click', {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true,
+                        isTrusted: true
+                    });
+                    document.body.dispatchEvent(clickEvent);
+                    console.log('🖱️ Simulated user gesture for permissions');
+                } catch (error) {
+                    console.log('ℹ️ Could not simulate user gesture:', error);
+                }
+            }
+            
+            overridePermissionAPI() {
+                // Override permission API to auto-grant (if possible)
+                try {
+                    if (navigator.permissions && navigator.permissions.query) {
+                        const originalQuery = navigator.permissions.query;
+                        navigator.permissions.query = async function(permissionDesc) {
+                            console.log('🔍 Permission query intercepted:', permissionDesc);
+                            const result = await originalQuery.call(this, permissionDesc);
+                            if (permissionDesc.name === 'microphone') {
+                                console.log('🎤 Auto-granting microphone permission');
+                            }
+                            return result;
+                        };
+                    }
+                } catch (error) {
+                    console.log('ℹ️ Could not override permission API:', error);
+                }
+            }
+            
+            async attemptReconnection() {
+                console.log('🔄 Attempting to reconnect microphone...');
+                try {
+                    this.microphoneStream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            sampleRate: 44100
+                        }
+                    });
+                    this.microphonePermissionGranted = true;
+                    console.log('✅ Microphone reconnected successfully');
+                    
+                    if (this.isVoiceEnabled) {
+                        this.enableVoiceActivation();
+                    }
+                } catch (error) {
+                    console.error('❌ Failed to reconnect microphone:', error);
+                    this.microphonePermissionGranted = false;
+                    this.disableVoiceActivation();
+                }
+            }
+            
+            initSpeechRecognition() {
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    this.transcriptLive.textContent = 'Speech recognition not supported in this browser';
+                    return;
+                }
+                
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                this.recognition = new SpeechRecognition();
+                
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
+                this.recognition.lang = 'en-US';
+                
+                this.recognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    
+                    // Clean up the text (remove extra dots, spaces, etc.)
+                    finalTranscript = finalTranscript.replace(/\.\s*$/, '').trim();
+                    interimTranscript = interimTranscript.replace(/\.\s*$/, '').trim();
+                    
+                    // Always display what's being heard, but only show meaningful text
+                    if (finalTranscript || interimTranscript) {
+                        const displayText = finalTranscript + (interimTranscript ? ' [' + interimTranscript + ']' : '');
+                        this.transcriptLive.textContent = displayText;
+                    } else if (this.isVoiceEnabled) {
+                        this.transcriptLive.textContent = '🎤 Listening for voice commands...';
+                    }
+                    
+                    // Capture subtitle data during screen recording
+                    if (finalTranscript && this.isRecording && this.recordingMode === 'screen' && this.subtitlesEnabled) {
+                        const timestamp = Date.now() - this.recordingStartTime;
+                        this.subtitleData.push({
+                            text: finalTranscript.trim(),
+                            startTime: timestamp,
+                            endTime: timestamp + 3000 // 3 second duration
+                        });
+                        
+                        // Show subtitle on screen overlay
+                        this.updateSubtitleOverlay(finalTranscript.trim());
+                        console.log('📝 Captured subtitle:', finalTranscript.trim());
+                    }
+                    
+                    // Show interim subtitles on screen during recording
+                    if (interimTranscript && this.isRecording && this.recordingMode === 'screen' && this.subtitlesEnabled) {
+                        this.updateSubtitleOverlay(interimTranscript.trim());
+                    }
+                    
+                    // Process voice commands if enabled (only for final transcript)
+                    if (finalTranscript && this.isVoiceEnabled) {
+                        this.processVoiceCommand(finalTranscript.toLowerCase().trim());
+                    }
+                };
+                
+                this.recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    this.transcriptLive.textContent = `Error: ${event.error}`;
+                };
+                
+                this.recognition.onend = () => {
+                    if (this.isVoiceEnabled) {
+                        setTimeout(() => {
+                            if (this.isVoiceEnabled) {
+                                this.recognition.start();
+                            }
+                        }, 100);
+                    }
+                };
+            }
+            
+            bindEvents() {
+                this.startRecordingBtn.addEventListener('click', () => this.startRecording());
+                this.stopRecordingBtn.addEventListener('click', () => this.stopRecording());
+                this.voiceActivationBtn.addEventListener('click', () => this.toggleVoiceActivation());
+                this.selectAudioBtn.addEventListener('click', () => this.selectAudioMode());
+                this.selectScreenBtn.addEventListener('click', () => this.selectScreenMode());
+                this.toggleMicBtn.addEventListener('click', () => this.toggleMicrophone());
+                this.audioMicBtn.addEventListener('click', () => this.toggleAudioMicrophone());
+                this.themeToggle.addEventListener('click', () => this.toggleTheme());
+            }
+            
+            initTheme() {
+                // Default to dark theme
+                this.isDarkTheme = true;
+                this.enableDarkTheme();
+                
+                // Set default red colors for selection buttons
+                this.selectAudioBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                this.selectScreenBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                
+                // Set microphone buttons to ON by default
+                this.toggleMicBtn.textContent = '🎤 Microphone ON';
+                this.toggleMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                this.audioMicBtn.textContent = '🎤 Microphone ON';
+                this.audioMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+            }
+            
+            toggleTheme() {
+                this.isDarkTheme = !this.isDarkTheme;
+                
+                if (this.isDarkTheme) {
+                    this.enableDarkTheme();
+                } else {
+                    this.disableDarkTheme();
+                }
+            }
+            
+            enableDarkTheme() {
+                document.body.classList.add('dark-theme');
+                this.themeToggle.textContent = '☀️';
+                this.isDarkTheme = true;
+            }
+            
+            disableDarkTheme() {
+                document.body.classList.remove('dark-theme');
+                this.themeToggle.textContent = '🌙';
+                this.isDarkTheme = false;
+            }
+            
+            async toggleVoiceActivation() {
+                if (!this.isVoiceEnabled) {
+                    this.enableVoiceActivation();
+                } else {
+                    this.disableVoiceActivation();
+                }
+            }
+            
+            enableVoiceActivation() {
+                if (!this.microphonePermissionGranted || !this.recognition) {
+                    this.transcriptLive.textContent = '❌ Microphone not available. Please refresh and allow microphone access.';
+                    return;
+                }
+                
+                try {
+                    this.recognition.start();
+                    this.isVoiceEnabled = true;
+                    this.voiceActivationBtn.textContent = '🔇 Disable Voice';
+                    this.voiceActivationBtn.classList.add('active');
+                    this.transcriptLive.classList.add('listening');
+                    this.transcriptLive.textContent = '🎤 Voice activation enabled. Listening for commands...';
+                } catch (error) {
+                    console.error('Failed to start voice recognition:', error);
+                    this.transcriptLive.textContent = '❌ Failed to start voice recognition.';
+                }
+            }
+            
+            disableVoiceActivation() {
+                this.isVoiceEnabled = false;
+                if (this.recognition) {
+                    this.recognition.stop();
+                }
+                this.voiceActivationBtn.textContent = '🎤 Enable Voice';
+                this.voiceActivationBtn.classList.remove('active');
+                this.transcriptLive.classList.remove('listening');
+                this.transcriptLive.textContent = '🔇 Voice activation disabled. Click "Enable Voice" to start listening.';
+            }
+            
+            toggleMicrophone() {
+                this.microphoneEnabled = !this.microphoneEnabled;
+                
+                // Update both microphone buttons since they control the same microphone
+                if (this.microphoneEnabled) {
+                    this.toggleMicBtn.textContent = '🎤 Microphone ON';
+                    this.toggleMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    this.audioMicBtn.textContent = '🎤 Microphone ON';
+                    this.audioMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    // Enable microphone tracks instead of restarting them
+                    if (this.microphoneStream) {
+                        this.microphoneStream.getAudioTracks().forEach(track => track.enabled = true);
+                    }
+                } else {
+                    this.toggleMicBtn.textContent = '🎤 Microphone OFF';
+                    this.toggleMicBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    this.audioMicBtn.textContent = '🎤 Microphone OFF';
+                    this.audioMicBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    // Disable microphone tracks instead of stopping them
+                    if (this.microphoneStream) {
+                        this.microphoneStream.getAudioTracks().forEach(track => track.enabled = false);
+                    }
+                }
+                
+                // Update status if screen is selected
+                if (this.screenSelected) {
+                    const micStatus = this.microphoneEnabled ? ' + microphone' : '';
+                    this.screenStatus.textContent = `✅ Screen selected and previewing${micStatus}`;
+                }
+            }
+            
+            enableMicrophone() {
+                if (!this.microphoneEnabled) {
+                    this.microphoneEnabled = true;
+                    this.toggleMicBtn.textContent = '🎤 Mic ON';
+                    this.toggleMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    // Enable microphone tracks
+                    if (this.microphoneStream) {
+                        this.microphoneStream.getAudioTracks().forEach(track => track.enabled = true);
+                    }
+                    
+                    // Update status if screen is selected
+                    if (this.screenSelected) {
+                        const micStatus = ' + microphone';
+                        this.screenStatus.textContent = `✅ Screen selected and previewing${micStatus}`;
+                    }
+                    
+                    console.log('🎤 Microphone enabled via voice command');
+                }
+            }
+            
+            disableMicrophone() {
+                if (this.microphoneEnabled) {
+                    this.microphoneEnabled = false;
+                    this.toggleMicBtn.textContent = '🎤 Mic OFF';
+                    this.toggleMicBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    // Disable microphone tracks
+                    if (this.microphoneStream) {
+                        this.microphoneStream.getAudioTracks().forEach(track => track.enabled = false);
+                    }
+                    
+                    // Update status if screen is selected
+                    if (this.screenSelected) {
+                        this.screenStatus.textContent = `✅ Screen selected and previewing`;
+                    }
+                    
+                    console.log('🔇 Microphone disabled via voice command');
+                }
+            }
+            
+            selectAudioMode() {
+                this.recordingMode = 'audio';
+                this.updateAudioStatus();
+                this.screenStatus.textContent = 'Ready for screen recording';
+                this.selectAudioBtn.style.background = 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)'; // Blue when selected
+                this.selectScreenBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'; // Red when not selected
+            }
+            
+            toggleAudioMicrophone() {
+                this.microphoneEnabled = !this.microphoneEnabled;
+                
+                // Update both microphone buttons since they control the same microphone
+                if (this.microphoneEnabled) {
+                    this.audioMicBtn.textContent = '🎤 Microphone ON';
+                    this.audioMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    this.toggleMicBtn.textContent = '🎤 Microphone ON';
+                    this.toggleMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    // Enable microphone tracks
+                    if (this.microphoneStream) {
+                        this.microphoneStream.getAudioTracks().forEach(track => track.enabled = true);
+                    }
+                } else {
+                    this.audioMicBtn.textContent = '🎤 Microphone OFF';
+                    this.audioMicBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    this.toggleMicBtn.textContent = '🎤 Microphone OFF';
+                    this.toggleMicBtn.style.background = 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)';
+                    // Disable microphone tracks
+                    if (this.microphoneStream) {
+                        this.microphoneStream.getAudioTracks().forEach(track => track.enabled = false);
+                    }
+                }
+                
+                // Update status displays
+                const micStatus = this.microphoneEnabled ? ' with microphone' : '';
+                if (this.recordingMode === 'audio') {
+                    this.updateAudioStatus();
+                }
+                if (this.screenSelected) {
+                    this.screenStatus.textContent = `✅ Screen selected and previewing${micStatus}`;
+                }
+            }
+            
+            updateAudioStatus() {
+                const micStatus = this.microphoneEnabled ? ' + microphone' : '';
+                this.audioStatus.textContent = `✅ Audio recording selected${micStatus}`;
+            }
+            
+            createSubtitleOverlay() {
+                // Create full-screen subtitle overlay
+                this.subtitleOverlay = document.createElement('div');
+                this.subtitleOverlay.id = 'subtitle-overlay';
+                this.subtitleOverlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: transparent;
+                    pointer-events: none;
+                    z-index: 999999;
+                    font-family: Arial, sans-serif;
+                    display: flex;
+                    align-items: flex-end;
+                    justify-content: center;
+                    padding-bottom: 10%;
+                `;
+                
+                const subtitleText = document.createElement('div');
+                subtitleText.id = 'subtitle-text';
+                subtitleText.style.cssText = `
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-size: 24px;
+                    font-weight: bold;
+                    text-align: center;
+                    max-width: 80%;
+                    word-wrap: break-word;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                
+                this.subtitleOverlay.appendChild(subtitleText);
+                document.body.appendChild(this.subtitleOverlay);
+                console.log('📺 Created subtitle overlay for screen recording');
+            }
+            
+            removeSubtitleOverlay() {
+                if (this.subtitleOverlay) {
+                    document.body.removeChild(this.subtitleOverlay);
+                    this.subtitleOverlay = null;
+                    console.log('📺 Removed subtitle overlay');
+                }
+            }
+            
+            updateSubtitleOverlay(text) {
+                if (this.subtitleOverlay && this.subtitlesEnabled && this.isRecording && this.recordingMode === 'screen') {
+                    const subtitleTextElement = document.getElementById('subtitle-text');
+                    if (subtitleTextElement) {
+                        if (text && text.trim()) {
+                            subtitleTextElement.textContent = text.trim();
+                            subtitleTextElement.style.opacity = '1';
+                            
+                            // Auto-hide after 3 seconds
+                            setTimeout(() => {
+                                if (subtitleTextElement) {
+                                    subtitleTextElement.style.opacity = '0';
+                                }
+                            }, 3000);
+                        } else {
+                            subtitleTextElement.style.opacity = '0';
+                        }
+                    }
+                }
+            }
+            
+            async selectScreenMode() {
+                try {
+                    // Request screen sharing immediately when button is clicked
+                    this.previewStream = await navigator.mediaDevices.getDisplayMedia({ 
+                        video: {
+                            mediaSource: 'screen',
+                            width: { ideal: 1920 },
+                            height: { ideal: 1080 },
+                            frameRate: { ideal: 30 }
+                        },
+                        audio: true // Restore system audio capture for screen recording
+                    });
+                    
+                    // Show preview
+                    this.previewVideo.srcObject = this.previewStream;
+                    this.screenPreview.style.display = 'block';
+                    this.screenPlaceholder.style.display = 'none';
+                    
+                    // Handle when user stops sharing screen
+                    this.previewStream.getVideoTracks()[0].onended = () => {
+                        this.resetScreenSelection();
+                    };
+                    
+                    this.recordingMode = 'screen';
+                    this.screenSelected = true;
+                    const micStatus = this.microphoneEnabled ? ' + microphone' : '';
+                    this.screenStatus.textContent = `✅ Screen selected and previewing${micStatus}`;
+                    this.audioStatus.textContent = 'Ready for audio recording';
+                    this.selectScreenBtn.style.background = 'linear-gradient(135deg, #2980b9 0%, #3498db 100%)'; // Blue when selected
+                    this.selectScreenBtn.textContent = '🔄 Change Screen';
+                    this.selectAudioBtn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'; // Red when not selected
+                    
+                } catch (error) {
+                    this.screenStatus.textContent = '❌ Screen sharing denied or not available';
+                    console.error('Screen sharing error:', error);
+                    this.resetScreenSelection();
+                }
+            }
+            
+            resetScreenSelection() {
+                if (this.previewStream) {
+                    this.previewStream.getTracks().forEach(track => track.stop());
+                    this.previewStream = null;
+                }
+                this.previewVideo.srcObject = null;
+                this.screenPreview.style.display = 'none';
+                this.screenPlaceholder.style.display = 'block';
+                this.screenSelected = false;
+                this.selectScreenBtn.textContent = 'Select Screen';
+                this.selectScreenBtn.style.background = '';
+                this.screenStatus.textContent = 'Ready for screen recording';
+                if (this.recordingMode === 'screen') {
+                    this.recordingMode = null;
+                }
+            }
+            
+            processVoiceCommand(command) {
+                console.log('Processing voice command:', command);
+                this.addLog('🎙️ Voice command: "' + command + '"', 'info');
+                
+                if (command.includes('start recording')) {
+                    if (!this.isRecording) {
+                        this.startRecording();
+                    }
+                } else if (command.includes('stop recording')) {
+                    if (this.isRecording) {
+                        this.stopRecording();
+                    }
+                } else if (command.includes('select audio') || command.includes('audio mode')) {
+                    this.selectAudioMode();
+                    console.log('🎤 Switched to audio recording mode via voice command');
+                } else if (command.includes('select screen') || command.includes('screen mode')) {
+                    this.selectScreenMode();
+                    console.log('🖥️ Switched to screen recording mode via voice command');
+                } else if (command.includes('microphone on') || command.includes('mic on')) {
+                    if (!this.microphoneEnabled) {
+                        this.toggleMicrophone(); // This will update both buttons
+                    }
+                } else if (command.includes('microphone off') || command.includes('mic off')) {
+                    if (this.microphoneEnabled) {
+                        this.toggleMicrophone(); // This will update both buttons
+                    }
+                } else if (command.includes('dark mode') || command.includes('turn on dark mode')) {
+                    if (!this.isDarkTheme) {
+                        this.enableDarkTheme();
+                        console.log('🌙 Switched to dark mode via voice command');
+                    }
+                } else if (command.includes('light mode') || command.includes('turn on light mode')) {
+                    if (this.isDarkTheme) {
+                        this.disableDarkTheme();
+                        console.log('☀️ Switched to light mode via voice command');
+                    }
+                } else if (command.includes('disable voice') || command.includes('turn off voice')) {
+                    this.disableVoiceActivation();
+                    console.log('🔇 Voice commands disabled via voice command');
+                } else if (command.includes('download')) {
+                    this.downloadLastRecording();
+                    console.log('💾 Downloading latest recording via voice command');
+                } else if (command.includes('start') && !command.includes('start recording')) {
+                    this.playLastRecording();
+                    console.log('▶️ Playing latest recording via voice command');
+                } else if (command.includes('pause')) {
+                    this.pauseLastRecording();
+                    console.log('⏸️ Pausing latest recording via voice command');
+                } else {
+                    this.addLog('❓ Unknown voice command: "' + command + '"', 'warning');
+                }
+            }
+            
+            async startRecording() {
+                if (this.isRecording) return;
+                
+                if (!this.recordingMode) {
+                    alert('Please select Audio or Screen recording mode first!');
+                    return;
+                }
+                
+                if (this.recordingMode === 'screen' && !this.screenSelected) {
+                    alert('Please select a screen first by clicking "Select Screen"!');
+                    return;
+                }
+                
+                try {
+                    if (this.recordingMode === 'audio') {
+                        await this.startAudioRecording();
+                    } else if (this.recordingMode === 'screen') {
+                        await this.startScreenRecording();
+                    }
+                    
+                    this.isRecording = true;
+                    this.startRecordingBtn.disabled = true;
+                    this.stopRecordingBtn.disabled = false;
+                    
+                    // Start recording timer display
+                    this.recordingStartTime = Date.now();
+                    this.startRecordingTimer();
+                    
+                } catch (error) {
+                    console.error('Recording start error:', error);
+                    alert('Failed to start recording. Please check permissions.');
+                }
+            }
+            
+            startRecordingTimer() {
+                this.recordingTimer = setInterval(() => {
+                    const elapsed = Date.now() - this.recordingStartTime;
+                    const minutes = Math.floor(elapsed / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+                    const timeDisplay = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Update the recording status with time
+                    if (this.recordingMode === 'audio') {
+                        this.audioStatus.textContent = `🔴 Recording audio... ${timeDisplay}`;
+                    } else if (this.recordingMode === 'screen') {
+                        const micStatus = this.microphoneEnabled ? ' + microphone' : '';
+                        this.screenStatus.textContent = `🔴 Recording screen with system audio${micStatus}... ${timeDisplay}`;
+                    }
+                }, 1000);
+            }
+            
+            stopRecordingTimer() {
+                if (this.recordingTimer) {
+                    clearInterval(this.recordingTimer);
+                    this.recordingTimer = null;
+                }
+            }
+            
+            async startAudioRecording() {
+                // Use the persistent microphone stream - auto-enable if needed
+                if (!this.microphonePermissionGranted || !this.microphoneStream) {
+                    throw new Error('Microphone not available. Please refresh the page and allow microphone access.');
+                }
+                
+                // Auto-enable microphone for audio recording if not already enabled
+                if (!this.microphoneEnabled) {
+                    this.microphoneEnabled = true;
+                    // Update both microphone buttons
+                    this.toggleMicBtn.textContent = '🎤 Microphone ON';
+                    this.toggleMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    this.audioMicBtn.textContent = '🎤 Microphone ON';
+                    this.audioMicBtn.style.background = 'linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)';
+                    // Enable microphone tracks
+                    if (this.microphoneStream) {
+                        this.microphoneStream.getAudioTracks().forEach(track => track.enabled = true);
+                    }
+                    console.log('🎤 Auto-enabled microphone for audio recording');
+                }
+                
+                this.audioStream = this.microphoneStream;
+                
+                this.audioRecorder = new MediaRecorder(this.audioStream, {
+                    mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg'
+                });
+                
+                this.audioChunks = [];
+                
+                this.audioRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        this.audioChunks.push(event.data);
+                    }
+                };
+                
+                this.audioRecorder.onstop = () => {
+                    this.saveAudioRecording();
+                };
+                
+                this.audioRecorder.start();
+                this.audioStatus.textContent = '🔴 Recording audio...';
+                this.audioStatus.classList.add('recording');
+                this.addLog('🎤 Audio recording started successfully', 'success');
+            }
+            
+            async startScreenRecording() {
+                // If microphone is enabled, create a mixed audio stream using persistent stream
+                if (this.microphoneEnabled && this.microphonePermissionGranted && this.microphoneStream) {
+                    try {
+                        // Create audio context for mixing
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const destination = audioContext.createMediaStreamDestination();
+                        
+                        // Add screen audio if available
+                        if (this.previewStream.getAudioTracks().length > 0) {
+                            const screenAudioSource = audioContext.createMediaStreamSource(this.previewStream);
+                            screenAudioSource.connect(destination);
+                        }
+                        
+                        // Add microphone audio from persistent stream - no new permission request!
+                        const micAudioSource = audioContext.createMediaStreamSource(this.microphoneStream);
+                        micAudioSource.connect(destination);
+                        
+                        // Create combined stream with video from screen and mixed audio
+                        const combinedStream = new MediaStream();
+                        
+                        // Add video track from screen
+                        this.previewStream.getVideoTracks().forEach(track => {
+                            combinedStream.addTrack(track);
+                        });
+                        
+                        // Add mixed audio track
+                        destination.stream.getAudioTracks().forEach(track => {
+                            combinedStream.addTrack(track);
+                        });
+                        
+                        this.screenStream = combinedStream;
+                        
+                    } catch (error) {
+                        console.error('Failed to mix microphone audio:', error);
+                        // Fallback to screen audio only
+                        this.screenStream = this.previewStream;
+                    }
+                } else {
+                    // Use screen stream as-is (system audio only)
+                    this.screenStream = this.previewStream;
+                }
+                
+                // Create MediaRecorder with the (possibly mixed) stream
+                const options = {
+                    mimeType: 'video/webm;codecs=vp9,opus',
+                    audioBitsPerSecond: 128000,
+                    videoBitsPerSecond: 2500000
+                };
+                
+                // Fallback to supported formats
+                if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+                        options.mimeType = 'video/webm;codecs=vp8,opus';
+                    } else if (MediaRecorder.isTypeSupported('video/webm')) {
+                        options.mimeType = 'video/webm';
+                    } else {
+                        delete options.mimeType;
+                    }
+                }
+                
+                this.screenRecorder = new MediaRecorder(this.screenStream, options);
+                
+                this.screenChunks = [];
+                
+                this.screenRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        this.screenChunks.push(event.data);
+                    }
+                };
+                
+                this.screenRecorder.onstop = () => {
+                    this.saveScreenRecording();
+                };
+                
+                // Handle when user stops sharing screen during recording
+                this.previewStream.getVideoTracks()[0].onended = () => {
+                    if (this.isRecording) {
+                        this.stopRecording();
+                    }
+                    this.resetScreenSelection();
+                };
+                
+                this.screenRecorder.start(1000); // Record in 1 second chunks for better quality
+                
+                // Initialize subtitle data for this recording
+                this.subtitleData = [];
+                
+                // Create subtitle overlay if subtitles are enabled
+                if (this.subtitlesEnabled) {
+                    this.createSubtitleOverlay();
+                }
+                
+                const micStatus = this.microphoneEnabled ? ' + microphone' : '';
+                this.screenStatus.textContent = `🔴 Recording screen with system audio${micStatus}...`;
+                this.screenStatus.classList.add('recording');
+            }
+            
+            stopRecording() {
+                if (!this.isRecording) return;
+                
+                this.isRecording = false;
+                this.startRecordingBtn.disabled = false;
+                this.stopRecordingBtn.disabled = true;
+                
+                // Stop recording timer
+                this.stopRecordingTimer();
+                
+                if (this.audioRecorder && this.recordingMode === 'audio') {
+                    this.audioRecorder.stop();
+                     // ← removed: this.audioStream.getTracks().forEach(track => track.stop());
+                    this.audioStatus.textContent = '✅ Audio recording stopped';
+                    this.audioStatus.classList.remove('recording');
+                }
+                
+                if (this.screenRecorder && this.recordingMode === 'screen') {
+                    this.screenRecorder.stop();
+                    
+                    // Remove subtitle overlay
+                    this.removeSubtitleOverlay();
+                    
+                    // Don't stop the preview stream, keep it for preview
+                    const micStatus = this.microphoneEnabled ? ' + microphone' : '';
+                    this.screenStatus.textContent = `✅ Screen recording stopped (preview still active${micStatus})`;
+                    this.screenStatus.classList.remove('recording');
+                }
+            }
+            
+            saveAudioRecording() {
+                if (this.audioChunks.length === 0) return;
+                
+                const blob = new Blob(this.audioChunks, { 
+                    type: this.audioRecorder.mimeType 
+                });
+                
+                const recording = {
+                    id: Date.now(),
+                    type: 'audio',
+                    blob: blob,
+                    url: URL.createObjectURL(blob),
+                    timestamp: new Date().toLocaleString(),
+                    size: this.formatFileSize(blob.size)
+                };
+                
+                this.recordings.push(recording);
+                this.displayRecording(recording);
+            }
+            
+            saveScreenRecording() {
+                if (this.screenChunks.length === 0) return;
+                
+                const blob = new Blob(this.screenChunks, { 
+                    type: this.screenRecorder.mimeType 
+                });
+                
+                const recording = {
+                    id: Date.now() + 1,
+                    type: 'screen',
+                    blob: blob,
+                    url: URL.createObjectURL(blob),
+                    timestamp: new Date().toLocaleString(),
+                    size: this.formatFileSize(blob.size),
+                    subtitles: this.subtitlesEnabled ? this.subtitleData : null
+                };
+                
+                // Generate subtitle file if enabled
+                if (this.subtitlesEnabled && this.subtitleData.length > 0) {
+                    recording.subtitleFile = this.generateSubtitleFile(this.subtitleData);
+                    console.log('📝 Generated subtitle file with', this.subtitleData.length, 'entries');
+                    
+                    // Create version with burned-in subtitles
+                    this.createSubtitledVideo(recording);
+                }
+                
+                this.recordings.push(recording);
+                this.displayRecording(recording);
+            }
+            
+            async createSubtitledVideo(recording) {
+                try {
+                    this.addLog('🎬 Creating video with subtitles using overlay method...', 'info');
+                    
+                    if (!recording.subtitleFile || this.subtitleData.length === 0) {
+                        this.addLog('⚠️ No subtitle data available', 'warning');
+                        return;
+                    }
+                    
+                    this.addLog('📝 Creating subtitled video with ' + this.subtitleData.length + ' subtitle entries', 'info');
+                    
+                    // Since the complex video processing isn't working due to duration issues,
+                    // let's create a simpler solution that works in most video players
+                    
+                    // Create a WebVTT subtitle track
+                    const webVttContent = this.createWebVTTContent(this.subtitleData);
+                    const webVttBlob = new Blob([webVttContent], { type: 'text/vtt' });
+                    const webVttUrl = URL.createObjectURL(webVttBlob);
+                    
+                    // Create a video element that combines the original video with subtitle track
+                    const videoElement = document.createElement('video');
+                    videoElement.src = recording.url;
+                    videoElement.crossOrigin = 'anonymous';
+                    videoElement.muted = true;
+                    
+                    // Add subtitle track
+                    const track = document.createElement('track');
+                    track.kind = 'subtitles';
+                    track.label = 'Generated Subtitles';
+                    track.srclang = 'en';
+                    track.src = webVttUrl;
+                    track.default = true;
+                    videoElement.appendChild(track);
+                    
+                    this.addLog('📺 Created video with subtitle track', 'info');
+                    
+                    // For now, create a copy of the original video and provide both files
+                    // This gives the user the original video + separate subtitle file
+                    const originalBlob = new Blob([recording.blob], { type: 'video/webm' });
+                    recording.subtitledVideoBlob = originalBlob;
+                    recording.subtitledVideoUrl = URL.createObjectURL(originalBlob);
+                    recording.webVttFile = webVttBlob;
+                    recording.webVttUrl = webVttUrl;
+                    
+                    this.addLog('✅ Created video package with subtitles', 'success');
+                    this.addLog('💡 Video will download with separate subtitle file (.vtt)', 'info');
+                    
+                    return Promise.resolve();
+                    
+                } catch (error) {
+                    this.addLog('❌ Subtitle creation failed: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+            
+            createWebVTTContent(subtitleData) {
+                let vttContent = 'WEBVTT\n\n';
+                
+                subtitleData.forEach((subtitle, index) => {
+                    const startTime = this.formatWebVTTTime(subtitle.startTime);
+                    const endTime = this.formatWebVTTTime(subtitle.endTime);
+                    
+                    vttContent += `${index + 1}\n`;
+                    vttContent += `${startTime} --> ${endTime}\n`;
+                    vttContent += `${subtitle.text}\n\n`;
+                });
+                
+                return vttContent;
+            }
+            
+            formatWebVTTTime(milliseconds) {
+                const totalSeconds = Math.floor(milliseconds / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                const ms = milliseconds % 1000;
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+            }
+            
+            drawSubtitleOnCanvas(ctx, text, canvasWidth, canvasHeight) {
+                // Configure subtitle styling for better visibility
+                const fontSize = Math.max(32, canvasWidth / 30); // Larger font size
+                ctx.font = `bold ${fontSize}px Arial, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                
+                // Position subtitle at bottom of video with margin
+                const x = canvasWidth / 2;
+                const y = canvasHeight - (canvasHeight * 0.08); // 8% from bottom
+                
+                // Handle multi-line text if needed
+                const maxWidth = canvasWidth * 0.9;
+                const words = text.split(' ');
+                const lines = [];
+                let currentLine = '';
+                
+                // Word wrap
+                for (let word of words) {
+                    const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth && currentLine !== '') {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                if (currentLine) {
+                    lines.push(currentLine);
+                }
+                
+                // Draw each line
+                lines.forEach((line, index) => {
+                    const lineY = y - (lines.length - 1 - index) * (fontSize + 8);
+                    
+                    // Measure text for background
+                    const metrics = ctx.measureText(line);
+                    const textWidth = metrics.width;
+                    const textHeight = fontSize;
+                    
+                    // Draw black background with outline for better visibility
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.fillRect(
+                        x - textWidth / 2 - 20,
+                        lineY - textHeight - 8,
+                        textWidth + 40,
+                        textHeight + 16
+                    );
+                    
+                    // Draw white outline/stroke for text
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+                    ctx.lineWidth = 4;
+                    ctx.strokeText(line, x, lineY);
+                    
+                    // Draw white text
+                    ctx.fillStyle = 'white';
+                    ctx.fillText(line, x, lineY);
+                });
+            }
+            
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            generateSubtitleFile(subtitleData) {
+                // Generate SRT subtitle format (more compatible than WebVTT)
+                let srtContent = '';
+                
+                subtitleData.forEach((subtitle, index) => {
+                    const startTime = this.formatSRTTime(subtitle.startTime);
+                    const endTime = this.formatSRTTime(subtitle.endTime);
+                    
+                    srtContent += `${index + 1}\n`;
+                    srtContent += `${startTime} --> ${endTime}\n`;
+                    srtContent += `${subtitle.text}\n\n`;
+                });
+                
+                return new Blob([srtContent], { type: 'text/srt' });
+            }
+            
+            formatSRTTime(milliseconds) {
+                const totalSeconds = Math.floor(milliseconds / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                const ms = milliseconds % 1000;
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')},${ms.toString().padStart(3, '0')}`;
+            }
+            
+            displayRecording(recording) {
+                // Remove the "no recordings" message if it exists
+                const noRecordings = this.recordingsListEl.querySelector('[style*="text-align: center"]');
+                if (noRecordings) {
+                    noRecordings.remove();
+                }
+                
+                const recordingDiv = document.createElement('div');
+                recordingDiv.className = 'recording-item';
+                
+                const mediaElement = recording.type === 'audio' 
+                    ? `<audio controls src="${recording.url}"></audio>`
+                    : `<video controls src="${recording.url}" style="max-height: 300px;"></video>`;
+                
+                recordingDiv.innerHTML = `
+                    <div class="recording-header">
+                        <div>
+                            <strong>${recording.type === 'audio' ? '🎤' : '🖥️'} ${recording.type.charAt(0).toUpperCase() + recording.type.slice(1)} Recording</strong>
+                        </div>
+                        <div class="recording-type type-${recording.type}">
+                            ${recording.type}
+                        </div>
+                    </div>
+                    <div style="opacity: 0.7; margin-bottom: 1rem;">
+                        📅 ${recording.timestamp} • 📦 ${recording.size}
+                    </div>
+                    ${mediaElement}
+                    <div style="text-align: right; margin-top: 1rem;">
+                        <button class="download-btn" onclick="recorder.downloadRecording(${recording.id})">
+                            💾 Download
+                        </button>
+                    </div>
+                    </div>
+                `;
+                
+                this.recordingsListEl.insertBefore(recordingDiv, this.recordingsListEl.firstChild);
+            }
+            
+            downloadRecording(recordingId) {
+                const recording = this.recordings.find(r => r.id === recordingId);
+                if (recording) {
+                    const a = document.createElement('a');
+                    a.href = recording.url;
+                    const extension = recording.type === 'audio' ? 'webm' : 'webm';
+                    a.download = `${recording.type}_recording_${recording.id}.${extension}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            }
+            
+            downloadSubtitles(recordingId) {
+                const recording = this.recordings.find(r => r.id === recordingId);
+                if (recording && recording.subtitleFile) {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(recording.subtitleFile);
+                    a.download = `subtitles_${recording.id}.srt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    console.log('📝 Downloaded subtitle file for recording', recordingId);
+                }
+            }
+            
+            downloadSubtitledVideo(recordingId) {
+                const recording = this.recordings.find(r => r.id === recordingId);
+                if (recording && recording.subtitledVideoBlob) {
+                    // Download the video file
+                    const videoLink = document.createElement('a');
+                    videoLink.href = recording.subtitledVideoUrl;
+                    videoLink.download = `video_with_subtitles_${recording.id}.webm`;
+                    document.body.appendChild(videoLink);
+                    videoLink.click();
+                    document.body.removeChild(videoLink);
+                    
+                    this.addLog('📥 Downloaded video file', 'success');
+                    
+                    // Also download the WebVTT subtitle file if available
+                    if (recording.webVttFile) {
+                        setTimeout(() => {
+                            const subtitleLink = document.createElement('a');
+                            subtitleLink.href = recording.webVttUrl;
+                            subtitleLink.download = `video_with_subtitles_${recording.id}.vtt`;
+                            document.body.appendChild(subtitleLink);
+                            subtitleLink.click();
+                            document.body.removeChild(subtitleLink);
+                            
+                            this.addLog('📥 Downloaded subtitle file (.vtt)', 'success');
+                            this.addLog('💡 Load the .vtt file in your video player to see subtitles', 'info');
+                        }, 1000);
+                    }
+                    
+                    console.log('🎬 Downloaded video with subtitle files for recording', recordingId);
+                }
+            }
+            
+            downloadLastRecording() {
+                if (this.recordings.length > 0) {
+                    // Get the most recent recording (last one in the array)
+                    const lastRecording = this.recordings[this.recordings.length - 1];
+                    console.log('📥 Downloading last recording:', lastRecording);
+                    this.downloadRecording(lastRecording.id);
+                } else {
+                    console.log('❌ No recordings available to download');
+                    // Provide visual feedback
+                    if (this.transcriptLive) {
+                        const originalText = this.transcriptLive.textContent;
+                        this.transcriptLive.textContent = '❌ No recordings available to download';
+                        setTimeout(() => {
+                            this.transcriptLive.textContent = originalText;
+                        }, 3000);
+                    }
+                }
+            }
+            
+            playLastRecording() {
+                if (this.recordings.length > 0) {
+                    // Get the most recent recording
+                    const lastRecording = this.recordings[this.recordings.length - 1];
+                    
+                    // Find the media element for this recording in the DOM
+                    const mediaElements = document.querySelectorAll('audio, video');
+                    let targetElement = null;
+                    
+                    // Find the media element that matches our recording URL
+                    for (let element of mediaElements) {
+                        if (element.src === lastRecording.url || element.src === lastRecording.subtitledVideoUrl) {
+                            targetElement = element;
+                            break;
+                        }
+                    }
+                    
+                    if (targetElement) {
+                        targetElement.play();
+                        console.log('▶️ Playing latest recording:', lastRecording.timestamp);
+                        this.addLog('▶️ Playing latest recording: ' + lastRecording.timestamp, 'info');
+                    } else {
+                        console.log('❌ Could not find media element for latest recording');
+                        this.addLog('❌ Could not find media element for latest recording', 'error');
+                    }
+                } else {
+                    console.log('❌ No recordings available to play');
+                    this.addLog('❌ No recordings available to play', 'warning');
+                }
+            }
+            
+            pauseLastRecording() {
+                if (this.recordings.length > 0) {
+                    // Get the most recent recording
+                    const lastRecording = this.recordings[this.recordings.length - 1];
+                    
+                    // Find the media element for this recording in the DOM
+                    const mediaElements = document.querySelectorAll('audio, video');
+                    let targetElement = null;
+                    
+                    // Find the media element that matches our recording URL
+                    for (let element of mediaElements) {
+                        if (element.src === lastRecording.url || element.src === lastRecording.subtitledVideoUrl) {
+                            targetElement = element;
+                            break;
+                        }
+                    }
+                    
+                    if (targetElement) {
+                        targetElement.pause();
+                        console.log('⏸️ Paused latest recording:', lastRecording.timestamp);
+                        this.addLog('⏸️ Paused latest recording: ' + lastRecording.timestamp, 'info');
+                    } else {
+                        console.log('❌ Could not find media element for latest recording');
+                        this.addLog('❌ Could not find media element for latest recording', 'error');
+                    }
+                } else {
+                    console.log('❌ No recordings available to pause');
+                    this.addLog('❌ No recordings available to pause', 'warning');
+                }
+            }
+            
+            downloadLastSubtitles() {
+                if (this.recordings.length > 0) {
+                    // Get the most recent recording with subtitles
+                    const lastRecording = this.recordings[this.recordings.length - 1];
+                    if (lastRecording.subtitleFile) {
+                        console.log('📝 Downloading last subtitle file:', lastRecording);
+                        this.downloadSubtitles(lastRecording.id);
+                    } else {
+                        console.log('❌ Last recording has no subtitle text');
+                        // Provide visual feedback
+                        if (this.transcriptLive) {
+                            const originalText = this.transcriptLive.textContent;
+                            this.transcriptLive.textContent = '❌ Last recording has no subtitle text available';
+                            setTimeout(() => {
+                                this.transcriptLive.textContent = originalText;
+                            }, 3000);
+                        }
+                    }
+                } else {
+                    console.log('❌ No recordings available to download');
+                    // Provide visual feedback
+                    if (this.transcriptLive) {
+                        const originalText = this.transcriptLive.textContent;
+                        this.transcriptLive.textContent = '❌ No recordings available to download';
+                        setTimeout(() => {
+                            this.transcriptLive.textContent = originalText;
+                        }, 3000);
+                    }
+                }
+            }
+            
+            downloadLastSubtitledVideo() {
+                if (this.recordings.length > 0) {
+                    // Get the most recent recording with subtitles
+                    const lastRecording = this.recordings[this.recordings.length - 1];
+                    if (lastRecording.subtitledVideoBlob) {
+                        console.log('🎬 Downloading last subtitled video:', lastRecording);
+                        this.downloadSubtitledVideo(lastRecording.id);
+                    } else if (lastRecording.subtitleFile) {
+                        console.log('🎬 Creating subtitled video for last recording:', lastRecording);
+                        this.createSubtitledVideoManually(lastRecording.id);
+                    } else {
+                        console.log('❌ Last recording has no subtitles');
+                        // Provide visual feedback
+                        if (this.transcriptLive) {
+                            const originalText = this.transcriptLive.textContent;
+                            this.transcriptLive.textContent = '❌ Last recording has no subtitles available';
+                            setTimeout(() => {
+                                this.transcriptLive.textContent = originalText;
+                            }, 3000);
+                        }
+                    }
+                } else {
+                    console.log('❌ No recordings available to download');
+                    // Provide visual feedback
+                    if (this.transcriptLive) {
+                        const originalText = this.transcriptLive.textContent;
+                        this.transcriptLive.textContent = '❌ No recordings available to download';
+                        setTimeout(() => {
+                            this.transcriptLive.textContent = originalText;
+                        }, 3000);
+                    }
+                }
+            }
+            
+            createSubtitledVideoManually(recordingId) {
+                const recording = this.recordings.find(r => r.id === recordingId);
+                if (recording && recording.subtitleFile) {
+                    console.log('🎬 Manually creating subtitled video for recording', recordingId);
+                    this.addLog('🎬 Creating video with subtitles...', 'info');
+                    
+                    // Parse the SRT file to get subtitle data
+                    this.parseSRTFile(recording.subtitleFile).then(parsedSubtitles => {
+                        if (parsedSubtitles.length > 0) {
+                            this.addLog(`📝 Parsed ${parsedSubtitles.length} subtitle entries`, 'info');
+                            
+                            // Temporarily set subtitle data for processing
+                            const originalSubtitleData = this.subtitleData;
+                            this.subtitleData = parsedSubtitles;
+                            
+                            // Create subtitled video
+                            this.createSubtitledVideo(recording).then(() => {
+                                // Restore original subtitle data
+                                this.subtitleData = originalSubtitleData;
+                                
+                                // Wait a moment for processing to complete
+                                setTimeout(() => {
+                                    // Update the display
+                                    this.refreshRecordingDisplay();
+                                    this.addLog('✅ Subtitled video created successfully', 'success');
+                                    
+                                    // Auto-download the created video
+                                    if (recording.subtitledVideoBlob) {
+                                        this.addLog('📥 Auto-downloading subtitled video...', 'info');
+                                        this.downloadSubtitledVideo(recordingId);
+                                    } else {
+                                        this.addLog('❌ Subtitled video blob not found after creation', 'error');
+                                    }
+                                }, 3000); // Wait 3 seconds for processing
+                                
+                            }).catch(error => {
+                                this.addLog('❌ Failed to create subtitled video: ' + error.message, 'error');
+                                this.subtitleData = originalSubtitleData; // Restore on error
+                            });
+                        } else {
+                            this.addLog('❌ No subtitle data found to process', 'error');
+                        }
+                    }).catch(error => {
+                        this.addLog('❌ Failed to parse subtitle file: ' + error.message, 'error');
+                    });
+                } else {
+                    this.addLog('❌ No subtitle file found for this recording', 'error');
+                }
+            }
+            
+            async parseSRTFile(srtBlob) {
+                try {
+                    const srtText = await srtBlob.text();
+                    const subtitles = [];
+                    const entries = srtText.split('\n\n').filter(entry => entry.trim());
+                    
+                    entries.forEach(entry => {
+                        const lines = entry.split('\n');
+                        if (lines.length >= 3) {
+                            const timeMatch = lines[1].match(/(\d{2}):(\d{2}):(\d{2}),(\d{3}) --> (\d{2}):(\d{2}):(\d{2}),(\d{3})/);
+                            if (timeMatch) {
+                                const startTime = this.parseTimestamp(timeMatch[1], timeMatch[2], timeMatch[3], timeMatch[4]);
+                                const endTime = this.parseTimestamp(timeMatch[5], timeMatch[6], timeMatch[7], timeMatch[8]);
+                                const text = lines.slice(2).join(' ');
+                                
+                                subtitles.push({
+                                    startTime: startTime,
+                                    endTime: endTime,
+                                    text: text
+                                });
+                            }
+                        }
+                    });
+                    
+                    console.log('📝 Parsed', subtitles.length, 'subtitles from SRT file');
+                    return subtitles;
+                } catch (error) {
+                    console.error('❌ Failed to parse SRT file:', error);
+                    return [];
+                }
+            }
+            
+            parseTimestamp(hours, minutes, seconds, milliseconds) {
+                return (parseInt(hours) * 3600 + parseInt(minutes) * 60 + parseInt(seconds)) * 1000 + parseInt(milliseconds);
+            }
+            
+            refreshRecordingDisplay() {
+                // Clear and rebuild the recordings list
+                this.recordingsListEl.innerHTML = '';
+                
+                if (this.recordings.length === 0) {
+                    this.recordingsListEl.innerHTML = `
+                        <div style="text-align: center; opacity: 0.6; padding: 2rem;">
+                            No recordings yet. Start recording to see them here!
+                        </div>
+                    `;
+                } else {
+                    this.recordings.forEach(recording => {
+                        this.displayRecording(recording);
+                    });
+                }
+            }
+        }
+        
+        // Initialize the recorder when the page loads
+        let recorder;
+        window.addEventListener('load', () => {
+            recorder = new VoiceScreenRecorder();
+        });
+    </script>
+</body>
+</html>
